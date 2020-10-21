@@ -4,6 +4,7 @@
 班級: 軟創三
 姓名: 簡立軒
 內容: Perceptron learning algorithm實作
+github: https://github.com/lishang4/DP_Lab1
 
 ------------------------------------
 
@@ -19,10 +20,11 @@
   ∟ data
       ∟ train.txt
       ∟ test.txt
+  ∟ dependency
+      ∟ package_check.sh
+      ∟ package_check_win10.bat
+      ∟ requirement.txt
   ∟ .env
-  ∟ requirement.txt
-  ∟ package_check.sh
-  ∟ package_check_win10.bat
   ∟ README.md
   ∟ README.txt
 
