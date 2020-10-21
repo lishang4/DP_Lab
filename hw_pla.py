@@ -19,7 +19,7 @@ class Perceptron:
         self.learningRate = LEARNINGRATE
         self.W = [0.3, 0.65, 1.0]
         self.rootPAth = abspath('.')
-        self.fig,self.ax=subplots(figsize=(6, 6), num='Perceptron Graph')
+        self.fig,self.ax=subplots(figsize=(7, 7), num='Perceptron Graph')
         self.drawCompoment = []
 
     # loading data
@@ -43,7 +43,7 @@ class Perceptron:
         return W[0]*X[0]+W[1]*X[1]-W[2]*self.threshold
         
     def set_up_canvas(self):
-        self.ax.legend(loc='upper right')
+        self.ax.legend(loc='upper right', bbox_to_anchor=(1.08, 1))
         self.ax.set_xlabel("X[1]")
         self.ax.set_ylabel("X[2]")
         self.ax.set_xlim(-28,28)
@@ -57,9 +57,12 @@ class Perceptron:
         self.ax.scatter(x_negative['x1'],x_negative['x2'],marker="x",label="y=-1")
         self.set_up_canvas()
 
-    def draw_predict_points(self, x_compoment, y_compoment):
-        self.ax.scatter(x_compoment['x1'],x_compoment['x2'],marker="*",label="test data",color='r')
-        for x1, x2, y in zip(x_compoment['x1'], x_compoment['x2'], y_compoment):
+    def draw_predict_points(self, x_compoment):
+        x_positive = x_compoment[x_compoment['y']==1]
+        x_negative = x_compoment[x_compoment['y']==-1]
+        self.ax.scatter(x_compoment['x1'],x_compoment['x2'],marker="*",label="y=+1(test data)",color='r')
+        self.ax.scatter(x_negative['x1'],x_negative['x2'],marker="s",label="y=-1(test data)", color='r')
+        for x1, x2, y in zip(x_compoment['x1'], x_compoment['x2'], x_compoment['y']):
             annotate(
                 f'({x1}, {x2}, {y})',
                 xy=(x1, x2),
@@ -95,8 +98,8 @@ class Perceptron:
     def train(self):
         data = self.load_file('train')
         self.drawCompoment = DataFrame(data, columns=['x1', 'x2', 'y'])
-        _iter = 0
-        while _iter <= 100:
+        epoch = 0
+        while epoch <= 100:
             misclassified = False
             for X in data:
                 outputLabel = X[2]
@@ -108,16 +111,16 @@ class Perceptron:
                     for i in range(0, len(X)-1):
                         # wk = wk + y * xk * learningRate
                         self.W[i] += outputLabel * X[i] * self.learningRate
-                    print(f'updated weights to {self.W}[{outputLabel} * {X[i]} * {self.learningRate}]')
-                    self.reflesh_plt(X, _iter)
+                    print(f'updated weights to {self.W}')
+                    self.reflesh_plt(X, epoch)
             if not misclassified:
                 print(f'')
                 print(f'train finished!') 
-                print(f'final iter: {_iter}')
-                self.reflesh_plt(X, _iter)
+                print(f'final epoch: {epoch}')
+                self.reflesh_plt(X, epoch)
                 return
-            _iter += 1
-        print('iter apporch limited')
+            epoch += 1
+        print('epoch limited attach, loop stop')
 
     # predict data using well-trainned weights
     def predict(self):
@@ -125,11 +128,12 @@ class Perceptron:
         predict_data = self.load_file('test')
         print(f'')
         print(f'ready to predict: {predict_data}')
+        print(f'using well-trained weights: {self.W}')
         for i,data in enumerate(predict_data):
-            result.append(self.estimate_pla(self.W, data))
-            print(f'{data} is predicted to {result[i]}')
+            data.append(self.estimate_pla(self.W, data))
+            print(f'{data} is predicted to {data[2]}')
         # draw predict points to canvas
-        self.draw_predict_points(DataFrame(predict_data, columns=['x1', 'x2']), result)
+        self.draw_predict_points(DataFrame(predict_data, columns=['x1', 'x2', 'y']))
         show()
         close()
 
