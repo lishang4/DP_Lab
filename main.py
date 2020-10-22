@@ -8,7 +8,8 @@ from constants import *
 from pandas import DataFrame
 from numpy import (
     sign as np_sign, 
-    linspace as np_linspace)
+    linspace as np_linspace,
+    array as np_array)
 from matplotlib.pyplot import (
     pause as plt_pause,show as plt_show,
     subplots as plt_subplots,
@@ -35,14 +36,18 @@ class Perceptron:
             with open(f"{self.rootPAth}/data/{fileName}.txt", 'r') as txtFile:
                 for line in txtFile:
                     line = line.replace('\n', '').split(',')
-                    data.append([int(_) for _ in line])
+                    x = [int(_) for _ in line]
+                    x.insert(2,1) # insert x0 between x2 and y
+                    data.append(x)
+            #data.insert(2,1)
             return data
         except Exception as e:
             raise
     
     # get y_hat
     def estimate_pla(self, W, X):
-        return np_sign(self.inner_product(W, X))
+        estimated = np_sign(self.inner_product(W, X))
+        return estimated if estimated != 0 else estimated+1
 
     # calculate inner product within W & X
     def inner_product(self, W:list, X:list):
@@ -75,7 +80,7 @@ class Perceptron:
         for x1, x2, y in zip(x_compoment['x1'], x_compoment['x2'], x_compoment['y']):
             plt_annotate(
                 f'({x1}, {x2}, {y})',
-                xy=(x1, x2+5),
+                xy=(x1, x2+1),
                 ha='center',
                 va='bottom',
                 fontsize=8,
@@ -101,23 +106,22 @@ class Perceptron:
         self.draw_line()
         self.ax.set_title(f"            epoch={epoch}\n \
             X1={X[0]}, X2={X[1]}, Y={X[2]}\n \
-            W1={self.W[0]}, W2={self.W[1]}, W3={self.W[2]}\n \
+            W1={self.W[0]}, W2={self.W[1]}, W0={self.W[2]}\n \
             Learning Rate = {self.learningRate}", fontsize=8)
         plt_pause(0.01) # use pause to mock-up event-loop which can make it draw the fig(a least once)
 
      # train data flow using PLA
     def train(self):
         data = self.load_file('train')
-        self.drawCompoment = DataFrame(data, columns=['x1', 'x2', 'y'])
+        self.drawCompoment = DataFrame(data, columns=['x1', 'x2','x0', 'y'])
         for epoch in range(1, self.epoch):
             classified = True
             for X in data:
-                outputLabel = X[2]
-                estimatedOutput_pre = self.estimate_pla(self.W, X)
-                estimatedOutput = estimatedOutput_pre if estimatedOutput_pre != 0 else estimatedOutput_pre+1
+                outputLabel = X[-1]
+                estimatedOutput = self.estimate_pla(self.W, X)
                 if estimatedOutput != outputLabel:
                     classified = False
-                    for i in range(0, len(X)-1):
+                    for i in range(0, len(self.W)):
                         self.W[i] += outputLabel * X[i] * self.learningRate # wk = wk + y * xk * learningRate
                     print(f'In Epoch {epoch}, weights got updated to {self.W}')
                     self.reflesh_canvas(X, epoch)
@@ -140,12 +144,12 @@ class Perceptron:
         # do predict using well-trained weights
         for i,data in enumerate(predict_data):
             data.append(self.estimate_pla(self.W, data))
-            print(f'{data} is predicted to {data[2]}')
+            print(f'{data} is predicted to {data[-1]}')
         print(f'predict finished!')
         print(f'')
 
         # draw predict points to canvas
-        self.draw_predict_points(DataFrame(predict_data, columns=['x1', 'x2', 'y']))
+        self.draw_predict_points(DataFrame(predict_data, columns=['x1', 'x2','x0', 'y']))
 
         # save canvas(fig) to root path
         pngPath = f"{self.rootPAth}/perceptron_507170627.png"
