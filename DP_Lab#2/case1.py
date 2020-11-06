@@ -1,62 +1,101 @@
+# -*- coding: UTF-8 -*-
+'''
+created at 2020/11/6
+author: Lishang Chien
+'''
 import matplotlib.pyplot as plt
 import numpy as np
 from pandas import DataFrame
 
-#網路上找的dataset 可以線性分割
 
-dataset = np.array([
-((1, 0, 0), 0),
-((1, 0, 1), 0),
-((1, 1, 0), 0),
-((1, 1, 1), 1)])
+class FuncAND:
+    def __init__(self, dataset, weights, learningRate, epoch):
+        self.dataset = np.array(dataset)
+        self.w = np.array(weights)
+        self.learningRate = learningRate
+        self.epochs = epoch
+        self.N = len(dataset)
 
-def sigmoid(z):
-    return 1 / (1 + np.exp(-z))
+    # calculate w0*x0 + w1*x1 ... wN*xN
+    def n(self, w, x):
+        return w.T.dot(x)
 
-def gradient(dataset, w):
-    g = np.zeros(len(w))
-    for x,y in dataset:
-        x = np.array(x)
-        error = sigmoid(w.T.dot(x))
-        g += (error - y) * x
-    return g / len(dataset)
+    # make sure n locate between 0 and 1
+    def sigmoid(self, n):
+        return 1.0 / (1.0 + np.exp(-n))
 
-def cost(dataset, w):
-    total_cost = 0
-    for x,y in dataset:
-        x = np.array(x)
-        error = sigmoid(w.T.dot(x))
-        total_cost += abs(y - error)
-    return total_cost
+    # error function
+    def cross_entropy(self, y, yHat):
+        return y - yHat
 
-def logistic(dataset):
-    w = np.zeros(3)
-    epoch = 200
-    eta = 1
-    #costs = []
-    for i in range(epoch):
-        #current_cost = cost(dataset, w)
-        print(f'In Epoch {i}, current_weights = {w}')
-        #print( "current_cost=",current_cost)
-        #costs.append(current_cost)
-        w = w - eta * gradient(dataset, w)
-        eta *= 0.95
-    return w, i+1
+    # logistic_regression algorithm
+    def logistic_regression(self):
+        errorMeasure_lastTime = 0.0 # initial last time's error measure
+        for epoch in range(1,self.epochs):
+            errorMeasure = 0.0 # reset error measure every epoch
+            for x,y in dataset:
+                yHat = self.sigmoid( self.n(self.w, x) ) # put n=sum(w*x) to o(n)=sigmoid(n), get yHat
+                self.w = self.w.T + self.learningRate * self.cross_entropy(y, yHat) * np.array(x) # w = w + learning rate * y-yHat * x
+                errorMeasure += self.cross_entropy(y, yHat) ** 2 # Mean Square Error(MSE), sum part
+                self.learningRate *= 0.98  # 使learning rate逐漸下降
 
-# start
-w,epoch = logistic(dataset)
-print(f'Final_weights : {w}')
-print(f'Final_epoch : {epoch}')
+            errorMeasure /= self.N # Mean Square Error(MSE), 1/N part
+            print(f'In Epoch {epoch}, weights = {self.w}, error measure = {errorMeasure}')
+            if errorMeasure < 0.05 or errorMeasure == errorMeasure_lastTime:
+                return self.w, epoch # return result when error measure enough small or error measure stop beening smaller
+            errorMeasure_lastTime = errorMeasure
+                
+        return self.w, self.epochs   # return result when error measure approach max epoch
 
-# draw
-ps = [v[0] for v in dataset]
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
+    # classify x to positive and negative within y
+    def classify_compoment(self, compoment):
+        return compoment[compoment['y']==1], compoment[compoment['y']==0]
+    
+    # draw
+    def fig_draw(self, weights):
+        # clean-up data
+        ps_train = [list(v[0])+[v[1]] for v in self.dataset] # mix tuple X and int Y into list
 
-ax1.scatter([v[1] for v in ps[:3]], [v[2] for v in ps[:3]], s=10, c='r', marker="x", label='X')
-ax1.scatter([v[1] for v in ps[3:]], [v[2] for v in ps[3:]], s=10, c='b', marker="o", label='O')
-l = np.linspace(-2,2)
-a,b = -w[1]/w[2], -w[0]/w[2]
-ax1.plot(l, a*l + b, 'b-')
-plt.legend(loc='upper left');
-plt.show()
+        # classify data by y's value
+        ps_train = DataFrame(ps_train, columns=['x0', 'x1','x2', 'y'])
+        train_positive, train_negative = self.classify_compoment(ps_train)
+
+        # initial fig
+        fig = plt.figure(num='Case 1, Func AND')
+        ax1 = fig.add_subplot(111)
+        ax1.set_xlabel("x1")
+        ax1.set_ylabel("x2")
+
+        # draw points
+        ax1.scatter(train_negative['x1'], train_negative['x2'], s=10, c='r', marker="x", label='y=0(train)')
+        ax1.scatter(train_positive['x1'], train_positive['x2'], s=10, c='b', marker="o", label='y=1(train)')
+
+        # draw line
+        line_x = np.linspace(-0.5,1.5)
+        line_y = (-weights[0] - np.dot(weights[1], line_x)) / weights[2]
+        ax1.plot(line_x, line_y, label='Decision Boundary')
+        plt.legend(loc='upper left')
+        print(f'>>[PROCESS] Fig drawn, close fig to end-up process')
+        plt.show()
+
+if __name__ == '__main__':
+    # initial
+    dataset = [((1, 0, 0), 0), #((x0,x1,x2), y1)
+               ((1, 0, 1), 0),
+               ((1, 1, 0), 0),
+               ((1, 1, 1), 1)]
+    weights = [0,0,0] # default weights
+    learningRate = 1  # default laerning rate
+    epoch = 1000      # maxiumn epoch
+
+    # create case1
+    case1 = FuncAND(dataset=dataset, weights=weights, learningRate=learningRate, epoch=epoch)
+
+    # algorithm start
+    print(f'>>[PROCESS] Func AND start, using logistic regression')
+    w_trained,epoch = case1.logistic_regression()
+    print(f'Final_weights : {w_trained}')
+    print(f'Final_epoch : {epoch}')
+
+    # draw
+    case1.fig_draw(weights=w_trained)
