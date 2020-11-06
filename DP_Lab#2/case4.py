@@ -40,7 +40,7 @@ class FuncAND:
                 self.learningRate *= 0.98  # 使learning rate逐漸下降
 
             errorMeasure /= self.N # Mean Square Error(MSE), 1/N part
-            print(f'In Epoch {epoch}, weights = {self.w}, error measure = {errorMeasure}')
+            print(f'In Epoch {epoch}, bias = {self.w[:1][0]}, weights = {self.w[1:]}, error measure = {errorMeasure}')
             if errorMeasure < 0.2:
                 return self.w, epoch # return result when error measure enough small or error measure stop beening smaller
             errorMeasure_lastTime = errorMeasure
