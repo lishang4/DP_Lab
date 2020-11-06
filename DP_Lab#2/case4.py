@@ -8,7 +8,7 @@ import numpy as np
 from pandas import DataFrame
 
 
-class FuncAND:
+class TrainExample:
     def __init__(self, dataset, weights, learningRate, epoch):
         self.dataset = np.array(dataset)
         self.w = np.array(weights)
@@ -109,10 +109,10 @@ if __name__ == '__main__':
     epoch = 1000      # maxiumn epoch
 
     # create case1
-    case4 = FuncAND(dataset=dataset, weights=weights, learningRate=learningRate, epoch=epoch)
+    case4 = TrainExample(dataset=dataset, weights=weights, learningRate=learningRate, epoch=epoch)
 
     # algorithm start
-    print(f'>>[PROCESS] Func AND start, using logistic regression')
+    print(f'>>[PROCESS] TrainExample start, using logistic regression')
     w_trained,epoch = case4.logistic_regression()
     print(f'Final_weights : {w_trained}')
     print(f'Final_epoch : {epoch}')

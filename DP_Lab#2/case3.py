@@ -8,7 +8,7 @@ import numpy as np
 from pandas import DataFrame
 
 
-class FuncAND:
+class FuncXOR:
     def __init__(self, dataset, weights, learningRate, epoch):
         self.dataset = np.array(dataset)
         self.w = np.array(weights)
@@ -89,10 +89,10 @@ if __name__ == '__main__':
     epoch = 1000      # maxiumn epoch
 
     # create case3
-    case3 = FuncAND(dataset=dataset, weights=weights, learningRate=learningRate, epoch=epoch)
+    case3 = FuncXOR(dataset=dataset, weights=weights, learningRate=learningRate, epoch=epoch)
 
     # algorithm start
-    print(f'>>[PROCESS] Func AND start, using logistic regression')
+    print(f'>>[PROCESS] Func XOR start, using logistic regression')
     w_trained,epoch = case3.logistic_regression()
     print(f'Final_weights : {w_trained}')
     print(f'Final_epoch : {epoch}')
