@@ -65,6 +65,7 @@ class FuncXOR:
         ax1 = fig.add_subplot(111)
         ax1.set_xlabel("x1")
         ax1.set_ylabel("x2")
+        ax1.set_title(f"Case 3, Func XOR", fontsize=20)
 
         # draw points
         ax1.scatter(train_negative['x1'], train_negative['x2'], s=10, c='r', marker="x", label='y=0(train)')
@@ -75,6 +76,7 @@ class FuncXOR:
         line_y = (-weights[0] - np.dot(weights[1], line_x)) / weights[2]
         ax1.plot(line_x, line_y, label='Decision Boundary')
         plt.legend(loc='upper left')
+        plt.savefig('./case3.png')
         print(f'>>[PROCESS] Fig drawn, close fig to end-up process')
         plt.show()
 
