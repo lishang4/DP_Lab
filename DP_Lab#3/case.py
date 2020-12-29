@@ -5,7 +5,6 @@ author: Lishang Chien
 '''
 import numpy as np
 import random
-from scipy.special import expit
 import loader
 
 #### Miscellaneous functions
@@ -41,7 +40,10 @@ class Network:
         self.eta = 0
 
     def feedforward(self, a, predict=False):
-        """Return the output of the network if ``a`` is input."""
+        """ 
+        前向傳播: 將x(input)和weights & bias做處理
+        返回每一層的的activation和net input
+        """
         zs = []
         activations = [a]
 
@@ -78,7 +80,11 @@ class Network:
         return
 
     def backprop(self, x, y):
-        """ backpropagation part """
+        """ 
+        反向傳播: 將activation和x(input)對應的目標輸出求差
+        delta L 使用softmax function
+        delta l1~L-1 使用sigmoid function
+        回傳局部更新後的weights & bias """
         nabla_b = [0 for i in self.biases]
         nabla_w = [0 for i in self.weights]
 
@@ -92,8 +98,8 @@ class Network:
 
         for l in range(2, self.num_layers):
             z = zs[-l]
-            sp = sigmoid(z, prime=True)
-            delta = np.dot(self.weights[-l + 1].transpose(), delta) * sp
+            sigmoid_prime = sigmoid(z, prime=True)
+            delta = np.dot(self.weights[-l + 1].transpose(), delta) * sigmoid_prime
             nabla_b[-l] = delta.sum(1).reshape([len(delta), 1]) # reshape to (n x 1) matrix
             nabla_w[-l] = np.dot(delta, activations[-l - 1].transpose())
 
@@ -153,8 +159,7 @@ class Network:
         return sum(int(yHat == y) for (yHat, y) in eva_results)
 
     def cost_derivative(self, yHat, y):
-        """Return the vector of partial derivatives \partial C_x /
-        \partial a for the output activations."""
+        """ cost function 使用cross entropy 回傳-∑𝑦𝑦𝑗𝑗log𝑎𝑎𝑗𝑗的導數 """
         return yHat-y
 
     def predict(self, test_data):
@@ -212,4 +217,5 @@ if __name__ == '__main__':
     print(f' -     Bias: {round(100-net.train_acc, 2)}%')
     print(f' - Variance: {round(-net.test_acc+net.train_acc, 2)}%')
     print(f'')
+    print(f'測試測試')
     print(f'>> Process End-Up !')
